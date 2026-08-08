@@ -1,0 +1,115 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --accent: #22D3EE;
+  --bg-alpha: 0.92;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+#frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(13, 17, 23, var(--bg-alpha));
+}
+body[data-theme="light"] #frame {
+  background: rgba(255, 255, 255, var(--bg-alpha));
+}
+
+/* titlebar */
+#titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 6px 0 10px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  user-select: none;
+}
+#title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+#controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+#controls button {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  cursor: pointer;
+  line-height: 1;
+}
+#controls button:hover { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+#btn-close:hover { background: #e5484d !important; color: #fff; }
+#opacity {
+  width: 52px;
+  height: 3px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* banner */
+#banner {
+  font-size: 11px;
+  padding: 4px 10px;
+  background: rgba(229, 72, 77, 0.25);
+  color: #ffb3b5;
+}
+body[data-theme="light"] #banner { color: #8c1d20; }
+
+/* content */
+#content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 14px;
+  background: transparent !important;
+  font-size: 14px;
+}
+#content::-webkit-scrollbar { width: 7px; }
+#content::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 4px;
+}
+#content::-webkit-scrollbar-track { background: transparent; }
+
+/* github-markdown-css transparent background override */
+.markdown-body { background: transparent !important; }
+
+/* docked strip mode */
+body.docked #frame { display: none; }
+body.docked #strip { display: block !important; }
+#strip {
+  position: fixed;
+  inset: 0;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  cursor: pointer;
+  opacity: 0.85;
+}
+#strip:hover { opacity: 1; }

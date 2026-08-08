@@ -1,0 +1,20 @@
+# Rust / Tauri build output (~2 GB, contains absolute local paths)
+src-tauri/target/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Logs and scratch
+*.log
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp

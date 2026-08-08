@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>lite-notes</title>
+  <link rel="stylesheet" href="vendor/github-markdown-light.min.css" id="md-light" />
+  <link rel="stylesheet" href="vendor/github-markdown-dark.min.css" id="md-dark" disabled />
+  <link rel="stylesheet" href="vendor/hljs-github.min.css" id="hl-light" />
+  <link rel="stylesheet" href="vendor/hljs-github-dark.min.css" id="hl-dark" disabled />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="dark">
+  <div id="frame">
+    <div id="titlebar" data-tauri-drag-region>
+      <span id="title" data-tauri-drag-region>lite-notes</span>
+      <div id="controls">
+        <input id="opacity" type="range" min="30" max="100" value="92" title="Opacity" />
+        <button id="btn-theme" title="Light/Dark">🌓</button>
+        <button id="btn-dock" title="Dock to edge">☰</button>
+        <button id="btn-close" title="Close">✕</button>
+      </div>
+    </div>
+    <div id="banner" hidden>⚠ file missing — wapas aayegi to resume ho jaayega</div>
+    <div id="content" class="markdown-body"></div>
+  </div>
+  <div id="strip" hidden title="Click to restore"></div>
+
+  <script src="vendor/marked.min.js"></script>
+  <script src="vendor/purify.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
