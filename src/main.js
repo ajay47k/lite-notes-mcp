@@ -22,6 +22,13 @@ function render(md, missing) {
   content.scrollTop = st; // preserve scroll on refresh
 }
 
+// Defense in depth alongside the Rust-side navigation guard: a link inside an
+// untrusted note must not be able to steer this chromeless window anywhere.
+content.addEventListener("click", (e) => {
+  const a = e.target.closest && e.target.closest("a");
+  if (a) e.preventDefault();
+});
+
 function applyColor(color) {
   document.documentElement.style.setProperty("--accent", color);
 }

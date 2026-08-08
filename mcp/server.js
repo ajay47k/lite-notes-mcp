@@ -58,11 +58,17 @@ function writeCmd(obj) {
 }
 function widgetRunning() {
   // real process check — a state.json freshness heuristic misfires while the
-  // widget is idle and triggers duplicate spawns
+  // widget is idle and triggers duplicate spawns.
+  // execFileSync with an absolute path: no shell, so `tasklist` can never be
+  // resolved from the current working directory (binary planting).
+  const tasklist = path.join(
+    process.env.SystemRoot || "C:\\Windows", "System32", "tasklist.exe"
+  );
   try {
-    const out = cp.execSync('tasklist /FI "IMAGENAME eq lite-notes.exe" /NH', {
-      encoding: "utf8", timeout: 3000, windowsHide: true,
-    });
+    const out = cp.execFileSync(
+      tasklist, ["/FI", "IMAGENAME eq lite-notes.exe", "/NH"],
+      { encoding: "utf8", timeout: 3000, windowsHide: true }
+    );
     return /lite-notes\.exe/i.test(out);
   } catch (_) { return false; }
 }
@@ -132,8 +138,27 @@ const handlers = {
     if (mdPath) {
       mode = "path";
       absPath = path.resolve(mdPath);
-      if (!fs.existsSync(absPath))
+      // Reject UNC/network and Win32 device paths. Merely *opening* a UNC path
+      // makes Windows authenticate outbound to that host, handing an attacker
+      // the user's NTLMv2 hash — so a hostile path must never reach the widget.
+      if (/^[\\/]{2}/.test(absPath))
+        return {
+          error: "invalid_path",
+          message: "Network (UNC) and device paths are not allowed. Use a local file path.",
+        };
+      let st;
+      try {
+        st = fs.statSync(absPath);
+      } catch (_) {
         return { error: "file_not_found", path: absPath };
+      }
+      if (!st.isFile())
+        return { error: "invalid_path", message: "Not a regular file." };
+      if (st.size > 5 * 1024 * 1024)
+        return {
+          error: "file_too_large",
+          message: `File is ${(st.size / 1048576).toFixed(1)} MB; the viewer caps notes at 5 MB.`,
+        };
     } else {
       mode = "content";
     }

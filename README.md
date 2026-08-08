@@ -147,9 +147,17 @@ and a leftover copy from a crash is cleared on the next launch. Your preferences
 - The widget is a **read-only viewer** — it never writes to a file you point it at.
 - It **only ever deletes** its own temporary copies inside `%LOCALAPPDATA%\lite-notes\notes\`.
   A file you open with `push_note(path)` is never modified or deleted.
-- Rendered markdown is sanitised with DOMPurify, and a strict Content Security Policy
-  blocks remote resource loading, so a malicious markdown file cannot execute scripts or
-  phone home. Remote images do not load by design; local and embedded (`data:`) images do.
+
+Rendering an untrusted markdown file is hardened against the obvious attacks:
+
+| Threat | Mitigation |
+|---|---|
+| Script injection | Sanitised with DOMPurify before insertion |
+| Tracking beacons / exfiltration via remote images | CSP `img-src 'self' asset: data:` — remote loads blocked. Local and embedded images still render |
+| Form posting to an attacker | CSP `form-action 'none'` |
+| A link hijacking the chromeless, always-on-top window | Navigation is restricted to the app's own origin in the Rust layer, with a click guard in the page as backup. External links are inert by design |
+| UNC paths triggering outbound SMB auth (NTLM hash leak) | Network and device paths are rejected before reaching the widget |
+| Oversized or non-regular files hanging the UI | Notes are capped at 5 MB and must be regular files |
 
 ## License
 

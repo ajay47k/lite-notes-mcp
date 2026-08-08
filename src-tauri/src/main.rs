@@ -21,6 +21,7 @@ use tauri::{
 
 const DEFAULT_COLORS: [&str; 2] = ["#22D3EE", "#F59E0B"]; // slot 1 cyan, slot 2 orange
 const MIN_COLOR_DIST: f64 = 60.0;
+const MAX_NOTE_BYTES: u64 = 5 * 1024 * 1024;
 const WELCOME_MD: &str = "# lite-notes\n\nAbhi koi note push nahi hua.\n\nClaude se bolo:\n\n> *\"is md file ko lite-notes me dikhao\"*\n\n- Drag: khali jagah pakad ke kheencho\n- `Ctrl` + scroll: zoom\n- ☰ button: dock to edge\n";
 
 #[derive(Serialize, Deserialize, Clone, Default)]
@@ -192,6 +193,25 @@ fn read_note_content(slot: &SlotInfo) -> (String, bool) {
     if slot.path.is_empty() {
         return (WELCOME_MD.to_string(), false);
     }
+    // Guard before reading: a directory or device path would block forever and
+    // an oversized file would exhaust memory on the UI thread. Commands can
+    // arrive straight from the inbox, so this cannot rely on the MCP server's
+    // own validation.
+    match fs::metadata(&slot.path) {
+        Ok(m) if !m.is_file() => return (String::new(), true),
+        Ok(m) if m.len() > MAX_NOTE_BYTES => {
+            return (
+                format!(
+                    "> **File too large to display** — {:.1} MB, limit is {} MB.",
+                    m.len() as f64 / 1_048_576.0,
+                    MAX_NOTE_BYTES / 1_048_576
+                ),
+                false,
+            )
+        }
+        Ok(_) => {}
+        Err(_) => return (String::new(), true),
+    }
     match fs::read_to_string(&slot.path) {
         Ok(c) => (c, false),
         Err(_) => (String::new(), true),
@@ -279,6 +299,13 @@ fn ensure_window(app: &AppHandle, slot: u8) -> Option<WebviewWindow> {
     .always_on_top(true)
     .skip_taskbar(true)
     .visible(true)
+    // an untrusted note must never be able to navigate this chromeless,
+    // always-on-top window somewhere else — there is no URL bar or back
+    // button to escape with. Only the app's own origin may load.
+    .on_navigation(|url| {
+        let host = url.host_str().unwrap_or("");
+        host.is_empty() || host == "localhost" || host.ends_with(".localhost")
+    })
     .build()
     .ok()?;
 
